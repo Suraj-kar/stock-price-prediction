@@ -26,3 +26,5 @@ def compute_regression(X, y):
 
 def predict(X, theta):
     return [sum(a * b for a, b in zip(row, [t[0] for t in theta])) for row in X]
+
+

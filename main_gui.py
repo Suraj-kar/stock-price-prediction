@@ -3,10 +3,10 @@ from tkinter import filedialog, messagebox, scrolledtext
 from PIL import Image, ImageTk
 import time
 import threading
-
 from data_reader import read_csv
 from data_processor import process_data
 from plot_utilities import draw_plot
+from accuracy_utils import calculate_accuracy  # Import the accuracy function
 
 class StockPredictionApp:
     def __init__(self, root):
@@ -52,6 +52,19 @@ class StockPredictionApp:
             self.data, self.predictions = process_data(data)
             self.progress_label.config(text="File uploaded successfully")
             messagebox.showinfo("Success", "File uploaded and data processed successfully.")
+
+            # Calculate accuracy
+            y, y_pred = self.predictions
+            mae, mse, r2 = calculate_accuracy(y, y_pred)  # Adjust this based on your accuracy calculation function
+
+            # Display accuracy in the terminal
+            print(f"Mean Absolute Error (MAE): {mae}")
+            print(f"Mean Squared Error (MSE): {mse}")
+            print(f"R-squared (R^2): {r2}")
+
+            # Optionally, show a messagebox with accuracy info
+            messagebox.showinfo("Accuracy", f"MAE: {mae:.2f}, MSE: {mse:.2f}, R²: {r2:.2f}")
+
         except Exception as e:
             messagebox.showerror("Error", f"Failed to upload file: {str(e)}")
 
@@ -77,4 +90,3 @@ class StockPredictionApp:
         if self.predictions is not None:
             y, y_pred = self.predictions
             draw_plot(self.canvas, y, y_pred)
-
