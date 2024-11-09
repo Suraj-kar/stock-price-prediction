@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox, scrolledtext
 from PIL import Image, ImageTk
 import time
 import threading
+
 from data_reader import read_csv
 from data_processor import process_data
 from plot_utilities import draw_plot
@@ -49,21 +50,39 @@ class StockPredictionApp:
                 time.sleep(0.02)
 
             header, data = read_csv(file_path)
-            self.data, self.predictions = process_data(data)
-            self.progress_label.config(text="File uploaded successfully")
-            messagebox.showinfo("Success", "File uploaded and data processed successfully.")
 
-            # Calculate accuracy
-            y, y_pred = self.predictions
-            mae, mse, r2 = calculate_accuracy(y, y_pred)  # Adjust this based on your accuracy calculation function
+            # Set target thresholds for MSE, MAE, and R²
+            target_mse = 400.0  # Example target MSE
+            target_mae = 10.0   # Example target MAE
+            target_r2 = 0.8     # Example target R²
+            max_retries = 5     # Limit the number of retraining attempts
+            attempts = 0
 
-            # Display accuracy in the terminal
-            print(f"Mean Absolute Error (MAE): {mae}")
-            print(f"Mean Squared Error (MSE): {mse}")
-            print(f"R-squared (R^2): {r2}")
+            while attempts < max_retries:
+                self.data, self.predictions = process_data(data)
+                y, y_pred = self.predictions
+                mae, mse, r2 = calculate_accuracy(y, y_pred)
 
-            # Optionally, show a messagebox with accuracy info
-            messagebox.showinfo("Accuracy", f"MAE: {mae:.2f}, MSE: {mse:.2f}, R²: {r2:.2f}")
+                # Display accuracy metrics
+                print(f"Attempt {attempts + 1}:")
+                print(f"Mean Absolute Error (MAE): {mae}")
+                print(f"Mean Squared Error (MSE): {mse}")
+                print(f"R-squared (R^2): {r2}")
+
+                # Check if MSE, MAE, and R² meet the targets
+                if mse <= target_mse and mae <= target_mae and r2 >= target_r2:
+                    self.progress_label.config(text="File uploaded and data processed successfully.")
+                    messagebox.showinfo("Success", f"Model trained successfully with MAE: {mae:.2f}, MSE: {mse:.2f}, R²: {r2:.2f}")
+                    break
+
+                attempts += 1
+                messagebox.showwarning("Retraining", f"Accuracy below target. Retrying... (Attempt {attempts + 1})")
+
+            if attempts == max_retries:
+                messagebox.showerror("Error", "Failed to reach the target accuracy after multiple attempts.")
+            
+            # Optionally show the final accuracy
+            messagebox.showinfo("Final Accuracy", f"Final MAE: {mae:.2f}, MSE: {mse:.2f}, R²: {r2:.2f}")
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to upload file: {str(e)}")
@@ -90,3 +109,4 @@ class StockPredictionApp:
         if self.predictions is not None:
             y, y_pred = self.predictions
             draw_plot(self.canvas, y, y_pred)
+
