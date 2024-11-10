@@ -110,3 +110,16 @@ class StockPredictionApp:
             y, y_pred = self.predictions
             draw_plot(self.canvas, y, y_pred)
 
+            legend_x = 500  
+            legend_y = 20   
+
+            # Clear any existing legend elements on the canvas, if needed
+            self.canvas.delete("legend")
+
+            # Create a rectangle for the legend background
+            self.canvas.create_rectangle(legend_x, legend_y, legend_x + 80, legend_y + 50, fill="white", tags="legend")
+
+            # Add labels for the actual and predicted data lines
+            self.canvas.create_text(legend_x + 10, legend_y + 10, text="Actual", fill="blue", anchor="w", tags="legend")
+            self.canvas.create_text(legend_x + 10, legend_y + 30, text="Predicted", fill="red", anchor="w", tags="legend")
+
